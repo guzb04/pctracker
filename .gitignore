@@ -1,4 +1,7 @@
-./*/env/
-./*/*.html
-
+env/
+*/env/
+**/temp*.html
+**/sitemap.xml
+pccompu/tempComponent.html
+thot/temp.html
 
