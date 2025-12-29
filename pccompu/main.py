@@ -50,4 +50,8 @@ for component in componentList:
 
     with open("tempComponent.html") as componentHTML:
         csoup = BeautifulSoup(componentHTML, features='html.parser')
-        print(csoup)
+    name = csoup.find("h1", class_="nombre").text
+    precio = csoup.find("span", id="precio_ent_actual").text
+    link = f"{PREFIX}{component}"
+    categoria = component.split("/")[0]
+    print(name, precio, categoria, link)
