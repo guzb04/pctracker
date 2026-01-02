@@ -1,7 +1,6 @@
 import time
 import requests
-from bs4 import BeautifulSoup, TemplateString
-
+from bs4 import BeautifulSoup
 from bs4 import XMLParsedAsHTMLWarning
 import warnings
 
@@ -50,8 +49,8 @@ for component in componentList:
 
     with open("tempComponent.html") as componentHTML:
         csoup = BeautifulSoup(componentHTML, features='html.parser')
-    name = csoup.find("h1", class_="nombre").text
-    precio = csoup.find("span", id="precio_ent_actual").text
-    link = f"{PREFIX}{component}"
-    categoria = component.split("/")[0]
-    print(name, precio, categoria, link)
+        name = csoup.find_all("h1", class_="nombre")[0].text
+        precio = csoup.find_all("span", id="precio_ent_actual")[0].text
+        link = f"{PREFIX}{component}"
+        categoria = component.split("/")[0]
+        print(name, precio, categoria, link, flush=True)

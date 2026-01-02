@@ -20,7 +20,7 @@ includedCategories = [27, 28, 29, 38, 39, 23, 24, 495]
 
 for i in includedCategories:
     r = requests.get(
-        f"https://thotcomputacion.com.uy/wp-json/wp/v2/product?product_cat={i}&per_page=100", verify=False)
+        f"https://thotcomputacion.com.uy/wp-json/wp/v2/product?product_cat={i}&per_page=100")
     data = r.json()
 
     time.sleep(1)
@@ -30,9 +30,9 @@ for i in includedCategories:
             break
 
         for j in data:
-            httpResponse = requests.get(j['link'], stream=True, verify=False)
+            httpResponse = requests.get(j['link'], stream=True)
             category = requests.get(
-                f"https://thotcomputacion.com.uy/wp-json/wp/v2/product_cat/{j['product_cat'][0]}", verify=False)
+                f"https://thotcomputacion.com.uy/wp-json/wp/v2/product_cat/{j['product_cat'][0]}")
             categoryParsed = category.json()['name']
             rawData = httpResponse.text
             file = open("temp.html", "w")
