@@ -4,9 +4,9 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "./server/include/postHandler.h"
 #define PORT 5440
 
-void *handlePost(void *arg);
 
 int main(int argc, char *argv[]) {
   int serverFD;
