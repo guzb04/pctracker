@@ -42,7 +42,6 @@ for i in includedCategories:
                 price = soup.find_all('bdi')
                 priceString = str(price[0])
                 newPrice = priceString[62:-6]
-
             dictToExport = {
                 "title":  j['title']['rendered'],
                 "price": newPrice,

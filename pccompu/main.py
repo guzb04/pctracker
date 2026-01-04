@@ -1,4 +1,5 @@
 import time
+import json
 import requests
 from bs4 import BeautifulSoup
 from bs4 import XMLParsedAsHTMLWarning
@@ -53,4 +54,11 @@ for component in componentList:
         precio = csoup.find_all("span", id="precio_ent_actual")[0].text
         link = f"{PREFIX}{component}"
         categoria = component.split("/")[0]
-        print(name, precio, categoria, link, flush=True)
+        dictToExport = {
+            "title": name,
+            "price": precio,
+            "category": categoria,
+            "link": link
+        }
+        jsonToExport = json.dumps(dictToExport)
+        print(jsonToExport)
