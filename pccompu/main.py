@@ -8,6 +8,10 @@ import warnings
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
+with open("../env.json", "r") as env:
+    envJson = json.load(env)
+    port = envJson["port"]
+
 def getUrls(urls):
     urlList = []
     for url in urls:

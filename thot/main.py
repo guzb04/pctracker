@@ -1,3 +1,4 @@
+from os import read
 import requests
 import json
 import time
@@ -15,6 +16,10 @@ i = 1
 39 - Radeon
 495 - DDR5
 """
+
+with open("../env.json", "r") as env:
+    envJson = json.load(env)
+    port = envJson["port"]
 
 includedCategories = [27, 28, 29, 38, 39, 23, 24, 495]
 
@@ -50,6 +55,7 @@ for i in includedCategories:
             }
 
             jsonReturn = json.dumps(dictToExport)
+            requests.post(f"http://localhost:{port}", json=jsonReturn)
             print(jsonReturn, flush=True)
             time.sleep(1.5)
 
