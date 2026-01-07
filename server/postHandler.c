@@ -7,6 +7,7 @@
 #include <json-c/json_types.h>
 #include <json-c/printbuf.h>
 #include <regex.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,12 +16,14 @@
 
 void deleteProduct(Product *p) {
 
+  if (!p)
+    return;
+
   free(p->name);
   free(p->category);
   free(p->link);
 
   free(p);
-  p = NULL;
 }
 
 Product *allocateProduct(int nameSize, int catSize, int linkSize) {
@@ -33,16 +36,10 @@ Product *allocateProduct(int nameSize, int catSize, int linkSize) {
   p->category = (char *)malloc(sizeof(char) * catSize + 1);
   p->link = (char *)malloc(sizeof(char) * linkSize + 1);
 
-  if (p->name == NULL || p->category == NULL || p->link == NULL) {
-    deleteProduct(p);
-    return NULL;
-  }
   return p;
 }
 
 Product *parseJsonIntoProduct(char *json) {
-
-
 
   json_object *outerJson = json_tokener_parse(json);
   const char *innerString = json_object_get_string(outerJson);
@@ -59,34 +56,47 @@ Product *parseJsonIntoProduct(char *json) {
   json_object_object_get_ex(parsedJson, "price", &price);
   json_object_object_get_ex(parsedJson, "link", &link);
 
-
   const char *tempTitle = json_object_get_string(title);
   const char *tempCat = json_object_get_string(category);
   const char *tempLink = json_object_get_string(link);
   double parsedPrice = json_object_get_double(price);
 
-  printf("%s", tempTitle);
-  printf("%s", tempLink);
-  printf("%s", tempCat);
-  fflush(stdout);
-
   Product *p =
       allocateProduct(sizeof(tempTitle), sizeof(tempCat), sizeof(tempLink));
 
+  free(p->name);
+  free(p->category);
+  free(p->link);
   p->name = strdup(tempTitle);
   p->category = strdup(tempCat);
   p->link = strdup(tempLink);
   p->price = parsedPrice;
 
-  free(title);
-  free(category);
-  free(link);
-  free(price);
-  free(outerJson);
-  free(parsedJson);
+  int i = json_object_put(outerJson);
+  while (i != 1) {
+    i = json_object_put(outerJson);
+  }
+
+  i = json_object_put(parsedJson);
+  while (i != 1) {
+    i = json_object_put(parsedJson);
+  }
 
   return p;
 }
+
+void buildHTTPResponse(char *response, size_t *responseLength) {
+
+  snprintf(response, BUFSIZ,
+           "HTTP/1.1 200 OK \r\n"
+           "Content-Type: application/json\r\n"
+           "\r\n"
+           "{\"status\": \"ok\"}");
+
+  *responseLength = strlen(response);
+
+}
+
 
 void *handlePost(void *arg) {
   int client_fd = *(int *)arg;
@@ -109,11 +119,31 @@ void *handlePost(void *arg) {
 
       Product *p = parseJsonIntoProduct(bodyStart);
 
+      printf("%s", p->category);
+      printf("%s", p->link);
+      printf("%s", p->name);
+      printf("%f", p->price);
+
       deleteProduct(p);
+    } else {
+      printf("request is not POST");
+      fflush(stdout);
     }
-    printf("request is not POST");
+    regfree(&regex);
   }
-  printf("no bytes received");
+
+  free(buffer);
+  free(arg);
+
+  char *response = (char *)malloc(BUFSIZ * 2 * sizeof(char));
+  size_t res_len;
+
+  buildHTTPResponse(response, &res_len);
+
+  send(client_fd, response, res_len, 0);
+
+  free(response);
+  close(client_fd);
 
   return NULL;
 }

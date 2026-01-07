@@ -16,8 +16,10 @@ int main(int argc, char *argv[]) {
 
   int port = json_object_get_int(portObject);
 
-  free(env);
-  free(portObject);
+  int i = json_object_put(env);
+  while (i != 1) {
+    i = json_object_put(env);
+  }
 
   int serverFD;
   struct sockaddr_in serverAddress;
