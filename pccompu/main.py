@@ -12,6 +12,7 @@ with open("../env.json", "r") as env:
     envJson = json.load(env)
     port = envJson["port"]
 
+
 def getUrls(urls):
     urlList = []
     for url in urls:
@@ -54,15 +55,20 @@ for component in componentList:
 
     with open("tempComponent.html") as componentHTML:
         csoup = BeautifulSoup(componentHTML, features='html.parser')
-        name = csoup.find_all("h1", class_="nombre")[0].text
-        precio = csoup.find_all("span", id="precio_ent_actual")[0].text
-        link = f"{PREFIX}{component}"
-        categoria = component.split("/")[0]
-        dictToExport = {
-            "title": name,
-            "price": precio,
-            "category": categoria,
-            "link": link
-        }
-        jsonToExport = json.dumps(dictToExport)
-        print(jsonToExport)
+        try:
+            name = csoup.find_all("h1", class_="nombre")[0].text
+            precio = csoup.find_all("span", id="precio_ent_actual")[0].text
+            link = f"{PREFIX}{component}"
+            categoria = component.split("/")[0]
+            dictToExport = {
+                "title": name,
+                "price": precio,
+                "category": categoria,
+                "link": link
+            }
+            jsonToExport = json.dumps(dictToExport)
+            requests.post(f"http://localhost:{port}", json=jsonToExport)
+
+            print(jsonToExport)
+        except:
+            print("error")
