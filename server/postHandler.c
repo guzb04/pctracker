@@ -1,4 +1,6 @@
 #include "include/postHandler.h"
+#include "include/Product.h"
+#include "include/queue.h"
 #include "unistd.h"
 #include <alloca.h>
 #include <json-c/json.h>
@@ -6,6 +8,7 @@
 #include <json-c/json_tokener.h>
 #include <json-c/json_types.h>
 #include <json-c/printbuf.h>
+#include <pthread.h>
 #include <regex.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -13,7 +16,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-
 
 Product *parseJsonIntoProduct(char *json) {
 
@@ -82,7 +84,10 @@ void buildHTTPResponse(char *response, size_t *responseLength, Product *p) {
 }
 
 void *handlePost(void *arg) {
-  int client_fd = *(int *)arg;
+
+  pthread_data_t *args = (pthread_data_t *)arg;
+  int client_fd = *args->fd;
+  queue_t *globalQueue = args->queue;
   char *buffer = (char *)malloc(BUFSIZ * sizeof(char));
 
   ssize_t bytesReceived = recv(client_fd, buffer, BUFSIZ, 0);
@@ -104,12 +109,6 @@ void *handlePost(void *arg) {
 
       p = parseJsonIntoProduct(bodyStart);
 
-      printf("%s\n", p->category);
-      printf("%s\n", p->link);
-      printf("%s\n", p->name);
-      printf("%f\n\n", p->price);
-      fflush(stdout);
-
     } else {
       printf("request is not POST");
       fflush(stdout);
@@ -118,18 +117,25 @@ void *handlePost(void *arg) {
   }
 
   free(buffer);
-  free(arg);
 
   char *response = (char *)malloc(BUFSIZ * 2 * sizeof(char));
   size_t res_len;
 
   buildHTTPResponse(response, &res_len, p);
-  deleteProduct(p);
+
+  pthread_mutex_lock(&args->queue->queueMutex);
+  insertProduct(p, args->queue);
+  pthread_mutex_unlock(&args->queue->queueMutex);
+
+  fflush(stdout);
 
   send(client_fd, response, res_len, 0);
 
   free(response);
   close(client_fd);
+
+  // free(args->fd);
+  free(args);
 
   return NULL;
 }

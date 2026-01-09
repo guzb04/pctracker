@@ -1,6 +1,6 @@
 obj_dir := ./obj
 
-objects := $(obj_dir)/main.o $(obj_dir)/postHandler.o
+objects := $(obj_dir)/main.o $(obj_dir)/postHandler.o $(obj_dir)/queue.o $(obj_dir)/product.o
 
 $(obj_dir):
 	mkdir -p $@
@@ -15,6 +15,12 @@ main: $(objects)
 
 # Compile postHandler.o
 ./obj/postHandler.o: server/postHandler.c | $(obj_dir)
+	gcc -c $< -o $@ -I./server/include
+
+./obj/queue.o: server/queue.c | $(obj_dir)
+	gcc -c $< -o $@ -I./server/include
+
+./obj/product.o: server/product.c | $(obj_dir)
 	gcc -c $< -o $@ -I./server/include
 
 clean:

@@ -1,5 +1,7 @@
 #include "server/include/postHandler.h"
+#include "server/include/queue.h"
 #include "sys/socket.h"
+#include <bits/pthreadtypes.h>
 #include <json-c/json.h>
 #include <json-c/json_object.h>
 #include <json-c/json_util.h>
@@ -7,6 +9,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 int main(int argc, char *argv[]) {
 
@@ -45,6 +49,9 @@ int main(int argc, char *argv[]) {
   }
 
   printf("running on port %d\n", port);
+  queue_t *productQueue = allocateQueue();
+
+  pthread_mutex_init(&productQueue->queueMutex, NULL);
 
   while (1) {
     struct sockaddr_in clientAddress;
@@ -56,11 +63,14 @@ int main(int argc, char *argv[]) {
       perror("accept error");
       continue;
     }
-    int *clientFD = malloc(sizeof(int));
-    *clientFD = client_fd;
+
+    pthread_data_t *arguments = (pthread_data_t*)malloc(sizeof(pthread_data_t));
+    arguments->queue = productQueue;
+    arguments->fd = &client_fd;
+
 
     pthread_t thread_id;
-    pthread_create(&thread_id, NULL, handlePost, (void *)clientFD);
+    pthread_create(&thread_id, NULL, handlePost, (void *)arguments);
     pthread_detach(thread_id);
   }
 }

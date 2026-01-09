@@ -8,13 +8,20 @@
 typedef struct QueueNode {
   Product *product;
   struct QueueNode *next;
+  struct QueueNode *prev;
 } queue_node_t;
 
 typedef struct Queue {
   pthread_mutex_t queueMutex;
   int currentSize;
-  queue_node_t *queue;
+  queue_node_t *firstIn;
+  queue_node_t *lastIn;
 } queue_t;
+
+typedef struct threadArg{
+  int *fd;
+  queue_t *queue;
+} pthread_data_t;
 
 
 
